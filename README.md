@@ -9,7 +9,8 @@ Instant IP lookup — no ads, no tracking, no noise.
 
 https://gizmolet.github.io/ip/
 
-![Example](example.png)
+
+
 
 ## Features
 
@@ -20,3 +21,4 @@ https://gizmolet.github.io/ip/
 - Responsive, no dependencies, no build step
 
 
+![Example](example.png)
