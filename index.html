@@ -7,6 +7,7 @@
     <link rel="icon" href="favicon.ico">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="manifest" href="favicon/site.webmanifest">
+    <meta name="theme-color" content="#0d1117">
     <title>IP Info</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -857,6 +858,8 @@
             btnLight.classList.toggle('active', theme === 'light');
             btnDark.classList.toggle('active',  theme === 'dark');
             btnCyber.classList.toggle('active', theme === 'cyber');
+            const themeColors = { light: '#f6f9fc', dark: '#0d1117', cyber: '#04000A' };
+            document.querySelector('meta[name="theme-color"]').content = themeColors[theme] ?? '#0d1117';
             cardTitle.textContent = theme === 'cyber' ? CYBER_TITLE : ORIGINAL_TITLE;
             if (lastCountryCode) renderFlag(lastCountryCode, lastCountryName);
             if (theme === 'cyber' && Object.keys(fieldValues).length) startGlitch();
