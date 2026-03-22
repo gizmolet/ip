@@ -21,4 +21,4 @@ https://gizmolet.github.io/ip/
 - Responsive, no dependencies, no build step
 
 
-![Example](example.png)
+![Example](example2.png)
