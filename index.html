@@ -565,6 +565,10 @@
                 <span class="field-label">Provider</span>
                 <span class="field-value" id="val-isp"><span class="skeleton" style="width:150px"></span></span>
             </div>
+            <div class="field">
+                <span class="field-label">ASN</span>
+                <span class="field-value" id="val-asn"><span class="skeleton" style="width:70px"></span></span>
+            </div>
         </div>
 
         <div class="card-footer" id="card-footer">
@@ -601,6 +605,7 @@
             region:  document.getElementById('val-region'),
             city:    document.getElementById('val-city'),
             isp:     document.getElementById('val-isp'),
+            asn:     document.getElementById('val-asn'),
             latency: document.getElementById('val-latency'),
             flag:    document.getElementById('flag'),
             btn:     document.getElementById('btn-reload'),
@@ -620,6 +625,7 @@
             el.region.innerHTML  = '<span class="skeleton" style="width:120px"></span>';
             el.city.innerHTML    = '<span class="skeleton" style="width:80px"></span>';
             el.isp.innerHTML     = '<span class="skeleton" style="width:150px"></span>';
+            el.asn.innerHTML     = '<span class="skeleton" style="width:70px"></span>';
             el.latency.innerHTML = '<span class="spinner"></span>';
         }
 
@@ -641,7 +647,7 @@
 
         // Glitch effect
         const ARTIFACTS = ['!', '@', '#', '$', '%', '^', '&', '*', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-        const GLITCH_KEYS = ['country', 'region', 'city', 'isp'];
+        const GLITCH_KEYS = ['country', 'region', 'city', 'isp', 'asn'];
         const fieldValues = {};
         let glitchTimer = null;
 
@@ -695,11 +701,13 @@
             fieldValues.region  = data.region       || '—';
             fieldValues.city    = data.city         || '—';
             fieldValues.isp     = data.isp          || '—';
+            fieldValues.asn     = data.asn          || '—';
             el.ip.textContent      = data.ip           || '—';
             el.country.textContent = fieldValues.country;
             el.region.textContent  = fieldValues.region;
             el.city.textContent    = fieldValues.city;
             el.isp.textContent     = fieldValues.isp;
+            el.asn.textContent     = fieldValues.asn;
 
             if (data.country_code) {
                 renderFlag(data.country_code, data.country_name);
@@ -712,7 +720,7 @@
 
         function setError(msg) {
             el.ip.textContent = el.country.textContent = el.region.textContent =
-                el.city.textContent = el.isp.textContent = '—';
+                el.city.textContent = el.isp.textContent = el.asn.textContent = '—';
             el.latency.textContent = '';
             el.error.textContent = msg;
             el.error.style.display = 'block';
@@ -784,13 +792,19 @@
                     countryName = new Intl.DisplayNames(['en'], { type: 'region' }).of(countryCode) || countryCode;
                 } catch {}
 
+                const orgRaw  = infoJson.org || '';
+                const asnMatch = orgRaw.match(/^(AS\d+)\s*/);
+                const asn = asnMatch ? asnMatch[1] : '—';
+                const isp = asnMatch ? orgRaw.slice(asnMatch[0].length) || '—' : orgRaw || '—';
+
                 setData({
                     ip,
                     country_name: countryName,
                     country_code: countryCode,
                     region:       infoJson.region || '—',
                     city:         infoJson.city   || '—',
-                    isp:          infoJson.org    || '—',
+                    isp,
+                    asn,
                 });
             } catch (e) {
                 setError('Failed to fetch IP info. Try again.');
