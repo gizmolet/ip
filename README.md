@@ -1,7 +1,13 @@
 # IP Info
 
 A minimal single-page app that shows your IP address and network details.
+
 Instant IP lookup — no ads, no tracking, no noise.
+
+
+## Live
+
+https://gizmolet.github.io/ip/
 
 ![Example](example.png)
 
@@ -13,6 +19,4 @@ Instant IP lookup — no ads, no tracking, no noise.
 - Light / Dark / Cyberpunk themes
 - Responsive, no dependencies, no build step
 
-## Live
 
-https://gizmolet.github.io/ip/
