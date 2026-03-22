@@ -772,18 +772,18 @@
             try {
                 const [ipRes, infoRes] = await Promise.all([
                     fetch('https://api4.ipify.org/?format=json', { cache: 'no-store' }),
-                    fetch('https://ifconfig.co/json', { cache: 'no-store' }),
+                    fetch('https://ipapi.co/json/', { cache: 'no-store' }),
                 ]);
                 if (!ipRes.ok)   throw new Error(`ipify HTTP ${ipRes.status}`);
-                if (!infoRes.ok) throw new Error(`ifconfig HTTP ${infoRes.status}`);
+                if (!infoRes.ok) throw new Error(`ipapi HTTP ${infoRes.status}`);
                 const [ipJson, infoJson] = await Promise.all([ipRes.json(), infoRes.json()]);
                 setData({
                     ip:           ipJson.ip,
-                    country_name: infoJson.country      || '—',
-                    country_code: infoJson.country_iso  || '',
-                    region:       infoJson.region_name  || '—',
+                    country_name: infoJson.country_name || '—',
+                    country_code: infoJson.country_code || '',
+                    region:       infoJson.region       || '—',
                     city:         infoJson.city         || '—',
-                    isp:          infoJson.asn_org      || '—',
+                    isp:          infoJson.org          || '—',
                 });
             } catch (e) {
                 setError('Failed to fetch IP info. Try again.');
