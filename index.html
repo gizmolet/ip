@@ -770,22 +770,27 @@
         async function fetchIP() {
             setLoading();
             try {
-                const ipRes = await fetch('https://api4.ipify.org/?format=json', { cache: 'no-store' });
-                if (!ipRes.ok) throw new Error(`ipify HTTP ${ipRes.status}`);
-                const { ip } = await ipRes.json();
+                const [ipRes, infoRes] = await Promise.all([
+                    fetch('https://api4.ipify.org/?format=json', { cache: 'no-store' }),
+                    fetch('https://ipinfo.io/json', { cache: 'no-store' }),
+                ]);
+                if (!ipRes.ok)   throw new Error(`ipify HTTP ${ipRes.status}`);
+                if (!infoRes.ok) throw new Error(`ipinfo HTTP ${infoRes.status}`);
+                const [{ ip }, infoJson] = await Promise.all([ipRes.json(), infoRes.json()]);
 
-                const infoRes = await fetch(`https://ipwho.is/${ip}`, { cache: 'no-store' });
-                if (!infoRes.ok) throw new Error(`ipwho HTTP ${infoRes.status}`);
-                const infoJson = await infoRes.json();
-                if (!infoJson.success) throw new Error('ipwho error');
+                const countryCode = infoJson.country || '';
+                let countryName = countryCode;
+                try {
+                    countryName = new Intl.DisplayNames(['en'], { type: 'region' }).of(countryCode) || countryCode;
+                } catch {}
 
                 setData({
                     ip,
-                    country_name: infoJson.country            || '—',
-                    country_code: infoJson.country_code       || '',
-                    region:       infoJson.region             || '—',
-                    city:         infoJson.city               || '—',
-                    isp:          infoJson.connection?.isp    || '—',
+                    country_name: countryName,
+                    country_code: countryCode,
+                    region:       infoJson.region || '—',
+                    city:         infoJson.city   || '—',
+                    isp:          infoJson.org    || '—',
                 });
             } catch (e) {
                 setError('Failed to fetch IP info. Try again.');
