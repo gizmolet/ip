@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="manifest" href="favicon/site.webmanifest">
+    <title>IP Info</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300..800&family=Rajdhani:wght@600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg:           #f6f9fc;
+            --card-bg:      #ffffff;
+            --title:        #8898aa;
+            --text:         #1a1f36;
+            --border:       #f0f3f8;
+            --ip-bg:        #e8f2fc;
+            --ip-color:     #1669bb;
+            --spinner-ring: #e0e0e0;
+            --spinner-top:  #8898aa;
+            --shadow:
+                0 0 0 1px rgba(60, 66, 87, 0.08),
+                0 2px 5px rgba(60, 66, 87, 0.06),
+                0 8px 24px rgba(60, 66, 87, 0.08);
+        }
+
+        html[data-theme="dark"] {
+            --bg:           #0d1117;
+            --card-bg:      #161b22;
+            --title:        #6e7f96;
+            --text:         #e6edf3;
+            --border:       #21262d;
+            --ip-bg:        rgba(96, 174, 232, 0.10);
+            --ip-color:     #60aee8;
+            --spinner-ring: #30363d;
+            --spinner-top:  #6e7f96;
+            --shadow:
+                0 0 0 1px rgba(0, 0, 0, 0.4),
+                0 2px 5px rgba(0, 0, 0, 0.3),
+                0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        html[data-theme="light"] {
+            --bg:           #f6f9fc;
+            --card-bg:      #ffffff;
+            --title:        #8898aa;
+            --text:         #1a1f36;
+            --border:       #f0f3f8;
+            --ip-bg:        #e8f2fc;
+            --ip-color:     #1669bb;
+            --spinner-ring: #e0e0e0;
+            --spinner-top:  #8898aa;
+            --shadow:
+                0 0 0 1px rgba(60, 66, 87, 0.08),
+                0 2px 5px rgba(60, 66, 87, 0.06),
+                0 8px 24px rgba(60, 66, 87, 0.08);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg:           #0d1117;
+                --card-bg:      #161b22;
+                --title:        #6e7f96;
+                --text:         #e6edf3;
+                --border:       #21262d;
+                --ip-bg:        rgba(96, 174, 232, 0.10);
+                --ip-color:     #60aee8;
+                --spinner-ring: #30363d;
+                --spinner-top:  #6e7f96;
+                --shadow:
+                    0 0 0 1px rgba(0, 0, 0, 0.4),
+                    0 2px 5px rgba(0, 0, 0, 0.3),
+                    0 8px 24px rgba(0, 0, 0, 0.3);
+            }
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Funnel Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .card {
+            width: min(360px, calc(100vw - 40px));
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .card-header {
+            padding: 32px 32px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--title);
+        }
+
+        .card-flag {
+            position: relative;
+            width: 24px;
+            height: 18px;
+            border-radius: 3px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .card-flag::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 3px;
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.10);
+            pointer-events: none;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .card-flag::after {
+                box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.20);
+            }
+        }
+
+        html[data-theme="dark"] .card-flag::after  { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.20); }
+        html[data-theme="light"] .card-flag::after { box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.10); }
+
+        html[data-theme="dark"] .skeleton {
+            background: linear-gradient(90deg, #21262d 25%, #2d333b 50%, #21262d 75%);
+            background-size: 200% 100%;
+        }
+        html[data-theme="light"] .skeleton {
+            background: linear-gradient(90deg, #f0f3f8 25%, #e4eaf2 50%, #f0f3f8 75%);
+            background-size: 200% 100%;
+        }
+
+        html[data-theme="dark"] .latency-badge.good   { background: rgba(52, 199, 89,  0.15); color: #3dd68c; }
+        html[data-theme="dark"] .latency-badge.medium { background: rgba(255, 159, 10, 0.15); color: #f5a623; }
+        html[data-theme="dark"] .latency-badge.bad    { background: rgba(255, 59,  48, 0.15); color: #ff6b6b; }
+        html[data-theme="light"] .latency-badge.good   { background: rgba(52, 199, 89,  0.15); color: #1a9e50; }
+        html[data-theme="light"] .latency-badge.medium { background: rgba(255, 159, 10, 0.15); color: #b87000; }
+        html[data-theme="light"] .latency-badge.bad    { background: rgba(255, 59,  48, 0.15); color: #d93025; }
+
+        .card-flag .fi {
+            width: 24px;
+            height: 18px;
+            display: block;
+            background-size: cover;
+        }
+
+        .card-flag.visible {
+            opacity: 1;
+        }
+
+        /* Body */
+        .card-body {
+            flex: 1;
+            padding: 16px 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .field {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 11px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .field:last-child {
+            border-bottom: none;
+        }
+
+        .field-label {
+            font-size: 14px;
+            color: var(--title);
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .field-value {
+            font-size: 15px;
+            color: var(--text);
+            font-weight: 500;
+            text-align: right;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #val-latency {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .ip-text,
+        .latency-badge {
+            font-family: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 3px 9px;
+            border-radius: 20px;
+            letter-spacing: 0.03em;
+            white-space: nowrap;
+        }
+
+        .ip-text              { background: var(--ip-bg); color: var(--ip-color); cursor: pointer; transition: opacity 0.15s ease; text-align: center; }
+        .ip-text:hover        { opacity: 0.75; }
+        .ip-text.copied       { opacity: 1; }
+        .latency-badge.good   { background: rgba(52, 199, 89,  0.15); color: #1a9e50; }
+        .latency-badge.medium { background: rgba(255, 159, 10, 0.15); color: #b87000; }
+        .latency-badge.bad    { background: rgba(255, 59,  48, 0.15); color: #d93025; }
+
+        @media (prefers-color-scheme: dark) {
+            .latency-badge.good   { background: rgba(52, 199, 89,  0.15); color: #3dd68c; }
+            .latency-badge.medium { background: rgba(255, 159, 10, 0.15); color: #f5a623; }
+            .latency-badge.bad    { background: rgba(255, 59,  48, 0.15); color: #ff6b6b; }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--spinner-ring);
+            border-top-color: var(--spinner-top);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Skeleton */
+        .skeleton {
+            display: inline-block;
+            background: linear-gradient(90deg, #f0f3f8 25%, #e4eaf2 50%, #f0f3f8 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 4px;
+            height: 15px;
+            vertical-align: middle;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .skeleton {
+                background: linear-gradient(90deg, #21262d 25%, #2d333b 50%, #21262d 75%);
+                background-size: 200% 100%;
+            }
+        }
+
+        @keyframes shimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Footer */
+        .card-footer {
+            padding: 0 32px 32px;
+        }
+
+        @media (max-width: 440px) {
+            .card-header { padding: 20px 20px 0; }
+            .card-body   { padding: 16px 20px; }
+            .card-footer { padding: 0 20px 20px; }
+        }
+
+        .btn {
+            width: 100%;
+            height: 44px;
+            background: #1a7bd4;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: 0.01em;
+            transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+        }
+
+        .btn:hover    { background: #1569bf; box-shadow: 0 4px 12px rgba(26, 123, 212, 0.35); }
+        .btn:active   { transform: scale(0.99); }
+        .btn:disabled { background: #8ec4ef; cursor: not-allowed; box-shadow: none; transform: none; }
+
+        .btn .spinner {
+            border-color: rgba(255, 255, 255, 0.35);
+            border-top-color: #ffffff;
+        }
+
+        .error-msg {
+            font-size: 13px;
+            color: #e5424d;
+            text-align: center;
+            padding: 8px 0 0;
+        }
+
+        /* Theme switcher */
+        .theme-switcher {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 4px;
+            background: rgba(128, 128, 128, 0.12);
+            border-radius: 20px;
+            padding: 4px;
+            opacity: 0.25;
+        }
+
+        .theme-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: transparent;
+            border-radius: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            transition: background 0.15s ease;
+        }
+
+        .theme-btn.active {
+            background: rgba(128, 128, 128, 0.25);
+        }
+
+        .theme-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* ── Cyberpunk 2077 theme ─────────────────────────────── */
+        html[data-theme="cyber"] {
+            --bg:           #04000a;
+            --card-bg:      #070010;
+            --title:        #ff003c;
+            --text:         #e0c8d0;
+            --border:       rgba(255, 0, 60, 0.15);
+            --ip-bg:        rgba(0, 240, 255, 0.06);
+            --ip-color:     #00f0ff;
+            --spinner-ring: rgba(255, 0, 60, 0.15);
+            --spinner-top:  #ff003c;
+            --shadow:
+                0 0 0 1px rgba(255, 0, 60, 0.4),
+                0 0 40px rgba(255, 0, 60, 0.12),
+                inset 0 0 80px rgba(4, 0, 10, 0.8);
+        }
+
+        /* Scanline overlay */
+        html[data-theme="cyber"] body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent 0px,
+                transparent 1px,
+                rgba(0, 0, 0, 0.06) 1px,
+                rgba(0, 0, 0, 0.06) 2px
+            );
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Card */
+        html[data-theme="cyber"] .card {
+            border: 1px solid #ff003c;
+            border-radius: 0;
+            overflow: visible;
+            position: relative;
+        }
+
+        /* Corner brackets */
+
+        /* Typography */
+        html[data-theme="cyber"] .card-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.25em;
+            color: #ff003c;
+            animation: glitch 5s infinite, flicker 8s infinite;
+        }
+
+        html[data-theme="cyber"] .field-label {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #ff003c;
+        }
+
+        html[data-theme="cyber"] .field-value {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: #e0c8d0;
+        }
+
+        /* IP badge */
+        html[data-theme="cyber"] .ip-text {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 15px;
+            color: #00f0ff;
+            background: none;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+        }
+        html[data-theme="cyber"] .ip-text::before { content: '['; margin-right: 3px; color: #00f0ff; }
+        html[data-theme="cyber"] .ip-text::after  { content: ']'; margin-left: 3px;  color: #00f0ff; }
+
+        /* Latency badges */
+        html[data-theme="cyber"] .latency-badge {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 15px;
+            background: none;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+        }
+        html[data-theme="cyber"] .latency-badge::before { content: '['; margin-right: 3px; }
+        html[data-theme="cyber"] .latency-badge::after  { content: ']'; margin-left: 3px; }
+        html[data-theme="cyber"] .latency-badge.good   { color: #00ff64; }
+        html[data-theme="cyber"] .latency-badge.medium { color: #ffc800; }
+        html[data-theme="cyber"] .latency-badge.bad    { color: #ff003c; }
+
+        /* Button */
+        html[data-theme="cyber"] .btn {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 16px;
+            animation: glitch 5s infinite, flicker 8s infinite;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            background: transparent;
+            border: 1px solid #ff003c;
+            border-radius: 0;
+            color: #ff003c;
+            height: 40px;
+        }
+        html[data-theme="cyber"] .btn::before { content: '[ '; color: #00f0ff; }
+        html[data-theme="cyber"] .btn::after  { content: ' ]'; color: #00f0ff; }
+        html[data-theme="cyber"] .btn:hover {
+            background: rgba(255, 0, 60, 0.08);
+            box-shadow: 0 0 24px rgba(255, 0, 60, 0.35);
+            color: #ff6080;
+        }
+        html[data-theme="cyber"] .btn:disabled {
+            background: transparent;
+            border-color: rgba(255, 0, 60, 0.18);
+            color: rgba(255, 0, 60, 0.25);
+            box-shadow: none;
+        }
+
+        /* Skeleton */
+        html[data-theme="cyber"] .skeleton {
+            background: linear-gradient(90deg, #1a000e 25%, rgba(255, 0, 60, 0.15) 50%, #1a000e 75%);
+            background-size: 200% 100%;
+            border-radius: 0;
+        }
+
+        /* Spinner */
+        html[data-theme="cyber"] .spinner {
+            border-color: rgba(255, 0, 60, 0.15);
+            border-top-color: #ff003c;
+            border-radius: 50%;
+        }
+
+        /* Flag */
+        html[data-theme="cyber"] .card-flag        { border-radius: 0; width: auto; height: auto; overflow: visible; }
+        html[data-theme="cyber"] .card-flag::after { display: none; }
+
+        .cyber-country-code {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 16px;
+            color: #00f0ff;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        /* Animations */
+        @keyframes glitch {
+            0%, 92%, 100% { text-shadow: none; transform: none; }
+            93%  { text-shadow: -2px 0 #00f0ff; transform: translateX(1px); }
+            94%  { text-shadow:  2px 0 #ff003c; transform: translateX(-1px); }
+            95%  { text-shadow: none; transform: none; }
+            96%  { text-shadow: 1px 0 #00f0ff, -1px 0 #ff003c; }
+            97%  { text-shadow: none; transform: none; }
+        }
+
+        @keyframes flicker {
+            0%, 95%, 100% { opacity: 1; }
+            96%  { opacity: 0.85; }
+            97%  { opacity: 1; }
+            98%  { opacity: 0.9; }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">IP Info</div>
+            <div class="card-flag" id="flag"></div>
+        </div>
+
+        <div class="card-body">
+            <div class="field">
+                <span class="field-label">IP Address</span>
+                <span class="field-value">
+                    <span class="ip-text" id="val-ip"><span class="skeleton" style="width:110px"></span></span>
+                    <span id="val-latency"></span>
+                </span>
+            </div>
+            <div class="field">
+                <span class="field-label">Country</span>
+                <span class="field-value" id="val-country"><span class="skeleton" style="width:90px"></span></span>
+            </div>
+            <div class="field">
+                <span class="field-label">Region</span>
+                <span class="field-value" id="val-region"><span class="skeleton" style="width:120px"></span></span>
+            </div>
+            <div class="field">
+                <span class="field-label">City</span>
+                <span class="field-value" id="val-city"><span class="skeleton" style="width:80px"></span></span>
+            </div>
+            <div class="field">
+                <span class="field-label">Provider</span>
+                <span class="field-value" id="val-isp"><span class="skeleton" style="width:150px"></span></span>
+            </div>
+        </div>
+
+        <div class="card-footer" id="card-footer">
+            <button class="btn" id="btn-reload" disabled>Test again</button>
+            <div class="error-msg" id="error-msg" style="display:none"></div>
+        </div>
+    </div>
+
+    <div class="theme-switcher">
+        <button class="theme-btn" id="btn-light" title="Light">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+        </button>
+        <button class="theme-btn" id="btn-dark" title="Dark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+        </button>
+        <button class="theme-btn" id="btn-cyber" title="Cyber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+        </button>
+    </div>
+
+    <script>
+        const el = {
+            ip:      document.getElementById('val-ip'),
+            country: document.getElementById('val-country'),
+            region:  document.getElementById('val-region'),
+            city:    document.getElementById('val-city'),
+            isp:     document.getElementById('val-isp'),
+            latency: document.getElementById('val-latency'),
+            flag:    document.getElementById('flag'),
+            btn:     document.getElementById('btn-reload'),
+            error:   document.getElementById('error-msg'),
+        };
+
+        function setLoading() {
+            stopGlitch();
+            stopJitter();
+            baseLatency = null;
+            el.btn.disabled = true;
+            el.error.style.display = 'none';
+            el.flag.className = 'card-flag';
+            el.flag.innerHTML = '';
+            el.ip.innerHTML      = '<span class="skeleton" style="width:110px"></span>';
+            el.country.innerHTML = '<span class="skeleton" style="width:90px"></span>';
+            el.region.innerHTML  = '<span class="skeleton" style="width:120px"></span>';
+            el.city.innerHTML    = '<span class="skeleton" style="width:80px"></span>';
+            el.isp.innerHTML     = '<span class="skeleton" style="width:150px"></span>';
+            el.latency.innerHTML = '<span class="spinner"></span>';
+        }
+
+        // Flag / country code rendering
+        let lastCountryCode = '';
+        let lastCountryName = '';
+
+        function renderFlag(code, name) {
+            lastCountryCode = code;
+            lastCountryName = name;
+            if (document.documentElement.dataset.theme === 'cyber') {
+                const label = `${code.toUpperCase()}_${name.slice(0, 3).toLowerCase()}`;
+                el.flag.innerHTML = `<span class="cyber-country-code">${label}</span>`;
+            } else {
+                el.flag.innerHTML = `<span class="fi fi-${code.toLowerCase()}"></span>`;
+            }
+            el.flag.classList.add('visible');
+        }
+
+        // Glitch effect
+        const ARTIFACTS = ['!', '@', '#', '$', '%', '^', '&', '*', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+        const GLITCH_KEYS = ['country', 'region', 'city', 'isp'];
+        const fieldValues = {};
+        let glitchTimer = null;
+
+        function renderGlitch(key) {
+            const text = fieldValues[key];
+            if (!text || text === '—') return;
+            const chars = text.split('');
+            const available = chars.map((c, i) => c !== ' ' ? i : -1).filter(i => i >= 0);
+            if (!available.length) return;
+            const base = Math.round(text.replace(/ /g, '').length / 4.5);
+            const count = Math.min(Math.max(2, base), 5, available.length);
+            const picks = available.sort(() => Math.random() - 0.5).slice(0, count);
+            const inner = chars.map((c, i) =>
+                picks.includes(i)
+                    ? `<span style="color:#ffc800">${ARTIFACTS[Math.floor(Math.random() * ARTIFACTS.length)]}</span>`
+                    : c
+            ).join('');
+            el[key].innerHTML = `<span>${inner}</span>`;
+        }
+
+        function restoreField(key) {
+            if (fieldValues[key]) el[key].textContent = fieldValues[key];
+        }
+
+        function scheduleGlitch() {
+            glitchTimer = setTimeout(() => {
+                if (document.documentElement.dataset.theme !== 'cyber') return;
+                // glitch 1-2 random fields
+                const fields = [...GLITCH_KEYS].sort(() => Math.random() - 0.5)
+                    .slice(0, Math.random() < 0.5 ? 1 : 2);
+                fields.forEach(renderGlitch);
+                // restore after 1-2 seconds
+                setTimeout(() => fields.forEach(restoreField), 1000 + Math.random() * 1000);
+                scheduleGlitch();
+            }, 2000 + Math.random() * 1500);
+        }
+
+        function startGlitch() {
+            stopGlitch();
+            scheduleGlitch();
+        }
+
+        function stopGlitch() {
+            clearTimeout(glitchTimer);
+            glitchTimer = null;
+            GLITCH_KEYS.forEach(restoreField);
+        }
+
+        function setData(data) {
+            fieldValues.country = data.country_name || '—';
+            fieldValues.region  = data.region       || '—';
+            fieldValues.city    = data.city         || '—';
+            fieldValues.isp     = data.isp          || '—';
+            el.ip.textContent      = data.ip           || '—';
+            el.country.textContent = fieldValues.country;
+            el.region.textContent  = fieldValues.region;
+            el.city.textContent    = fieldValues.city;
+            el.isp.textContent     = fieldValues.isp;
+
+            if (data.country_code) {
+                renderFlag(data.country_code, data.country_name);
+            }
+
+            el.btn.textContent = 'Test again';
+            el.btn.disabled = false;
+            if (document.documentElement.dataset.theme === 'cyber') startGlitch();
+        }
+
+        function setError(msg) {
+            el.ip.textContent = el.country.textContent = el.region.textContent =
+                el.city.textContent = el.isp.textContent = '—';
+            el.latency.textContent = '';
+            el.error.textContent = msg;
+            el.error.style.display = 'block';
+            el.btn.textContent = 'Test again';
+            el.btn.disabled = false;
+        }
+
+        async function measureLatency() {
+            const t0 = performance.now();
+            const res = await fetch('https://1.1.1.1/cdn-cgi/trace', { cache: 'no-store', mode: 'no-cors' });
+            return Math.round(performance.now() - t0);
+        }
+
+        let baseLatency = null;
+        let jitterTimer = null;
+
+        function renderLatency(ms) {
+            const cls = ms < 100 ? 'good' : ms < 200 ? 'medium' : 'bad';
+            el.latency.innerHTML = `<span class="latency-badge ${cls}">${ms} ms</span>`;
+        }
+
+        function scheduleJitter() {
+            jitterTimer = setTimeout(() => {
+                if (document.documentElement.dataset.theme !== 'cyber' || baseLatency === null) return;
+                const jitter = baseLatency * (1 + (Math.random() * 0.1 - 0.05));
+                renderLatency(Math.round(jitter));
+                scheduleJitter();
+            }, 2000 + Math.random() * 1000);
+        }
+
+        function startJitter() {
+            clearTimeout(jitterTimer);
+            jitterTimer = null;
+            if (baseLatency !== null) scheduleJitter();
+        }
+
+        function stopJitter() {
+            clearTimeout(jitterTimer);
+            jitterTimer = null;
+            if (baseLatency !== null) renderLatency(baseLatency);
+        }
+
+        async function fetchLatency() {
+            el.latency.innerHTML = '<span class="spinner"></span>';
+            try {
+                const ms = await measureLatency();
+                baseLatency = ms;
+                renderLatency(ms);
+                if (document.documentElement.dataset.theme === 'cyber') startJitter();
+            } catch {
+                el.latency.textContent = '—';
+            }
+        }
+
+        async function fetchIP() {
+            setLoading();
+            try {
+                const [ipRes, infoRes] = await Promise.all([
+                    fetch('https://api4.ipify.org/?format=json', { cache: 'no-store' }),
+                    fetch('https://ifconfig.co/json', { cache: 'no-store' }),
+                ]);
+                if (!ipRes.ok)   throw new Error(`ipify HTTP ${ipRes.status}`);
+                if (!infoRes.ok) throw new Error(`ifconfig HTTP ${infoRes.status}`);
+                const [ipJson, infoJson] = await Promise.all([ipRes.json(), infoRes.json()]);
+                setData({
+                    ip:           ipJson.ip,
+                    country_name: infoJson.country      || '—',
+                    country_code: infoJson.country_iso  || '',
+                    region:       infoJson.region_name  || '—',
+                    city:         infoJson.city         || '—',
+                    isp:          infoJson.asn_org      || '—',
+                });
+            } catch (e) {
+                setError('Failed to fetch IP info. Try again.');
+            }
+        }
+
+        function run() {
+            fetchIP();
+            fetchLatency();
+        }
+
+        el.btn.addEventListener('click', () => {
+            el.btn.disabled = true;
+            el.btn.innerHTML = '<span class="spinner"></span>';
+            setTimeout(run, 300);
+        });
+        run();
+
+        // Copy IP on click
+        let copyTimeout = null;
+        el.ip.addEventListener('click', () => {
+            const ip = el.ip.textContent.trim();
+            if (!ip || ip === '—') return;
+            navigator.clipboard.writeText(ip).then(() => {
+                const orig = el.ip.textContent;
+                el.ip.style.width = el.ip.offsetWidth + 'px';
+                el.ip.textContent = 'Copied!';
+                el.ip.classList.add('copied');
+                clearTimeout(copyTimeout);
+                copyTimeout = setTimeout(() => {
+                    el.ip.textContent = orig;
+                    el.ip.style.width = '';
+                    el.ip.classList.remove('copied');
+                }, 1000);
+            });
+        });
+
+        // Theme switcher
+        const html = document.documentElement;
+        const btnLight  = document.getElementById('btn-light');
+        const btnDark   = document.getElementById('btn-dark');
+        const btnCyber  = document.getElementById('btn-cyber');
+        const card      = document.querySelector('.card');
+        const cardTitle = document.querySelector('.card-title');
+        const ORIGINAL_TITLE = cardTitle.textContent;
+        const CYBER_TITLE    = 'NET_SCAN // UPLINK';
+
+        function applyTheme(theme) {
+            html.dataset.theme = theme;
+            btnLight.classList.toggle('active', theme === 'light');
+            btnDark.classList.toggle('active',  theme === 'dark');
+            btnCyber.classList.toggle('active', theme === 'cyber');
+            cardTitle.textContent = theme === 'cyber' ? CYBER_TITLE : ORIGINAL_TITLE;
+            if (lastCountryCode) renderFlag(lastCountryCode, lastCountryName);
+            if (theme === 'cyber' && Object.keys(fieldValues).length) startGlitch();
+            else stopGlitch();
+            if (theme === 'cyber') startJitter();
+            else stopJitter();
+        }
+
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        applyTheme(systemDark ? 'dark' : 'light');
+
+        btnLight.addEventListener('click', () => applyTheme('light'));
+        btnDark.addEventListener('click',  () => applyTheme('dark'));
+        btnCyber.addEventListener('click', () => applyTheme('cyber'));
+    </script>
+</body>
+</html>
