@@ -223,6 +223,7 @@
         #val-latency {
             display: inline-flex;
             align-items: center;
+            gap: 4px;
         }
 
         .ip-text,
@@ -242,6 +243,15 @@
         .latency-badge.good   { background: rgba(52, 199, 89,  0.15); color: #1a9e50; }
         .latency-badge.medium { background: rgba(255, 159, 10, 0.15); color: #b87000; }
         .latency-badge.bad    { background: rgba(255, 59,  48, 0.15); color: #d93025; }
+
+        .latency-badge.latency-min { font-weight: 700; }
+
+        @keyframes badge-pulse {
+            0%   { box-shadow: 0 0 0 0px currentColor; }
+            40%  { box-shadow: 0 0 0 1px currentColor; }
+            100% { box-shadow: 0 0 0 0px currentColor; }
+        }
+        .latency-badge.latency-pulse { animation: badge-pulse 0.3s ease-out forwards; }
 
         @media (prefers-color-scheme: dark) {
             .latency-badge.good   { background: rgba(52, 199, 89,  0.15); color: #3dd68c; }
@@ -311,11 +321,26 @@
             cursor: pointer;
             letter-spacing: 0.01em;
             transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
         }
+        .btn svg { flex-shrink: 0; }
 
         .btn:hover    { background: #1569bf; box-shadow: 0 4px 12px rgba(26, 123, 212, 0.35); }
         .btn:active   { transform: scale(0.99); }
         .btn:disabled { background: #8ec4ef; cursor: not-allowed; box-shadow: none; transform: none; }
+
+        html[data-theme="light"] .btn          { background: #e8f2fc; color: #1669bb; box-shadow: none; }
+        html[data-theme="light"] .btn:hover    { background: #d8eaf8; box-shadow: none; color: #1157a0; }
+        html[data-theme="light"] .btn:active   { background: #cce0f5; box-shadow: none; color: #0e4a8a; }
+        html[data-theme="light"] .btn:disabled { background: #f0f7fd; color: #7aaed4; box-shadow: none; }
+
+        html[data-theme="dark"] .btn          { background: rgba(96, 174, 232, 0.10); color: #60aee8; box-shadow: none; }
+        html[data-theme="dark"] .btn:hover    { background: rgba(96, 174, 232, 0.06); box-shadow: none; color: #4d9ad4; }
+        html[data-theme="dark"] .btn:active   { background: rgba(96, 174, 232, 0.18); box-shadow: none; color: #80c4f0; }
+        html[data-theme="dark"] .btn:disabled { background: rgba(96, 174, 232, 0.05); color: #3a6a8a; box-shadow: none; }
 
         .btn .spinner {
             border-color: rgba(255, 255, 255, 0.35);
@@ -573,7 +598,10 @@
         </div>
 
         <div class="card-footer" id="card-footer">
-            <button class="btn" id="btn-reload" disabled>Test again</button>
+            <button class="btn" id="btn-reload" disabled>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                Test again
+            </button>
             <div class="error-msg" id="error-msg" style="display:none"></div>
         </div>
     </div>
@@ -714,7 +742,7 @@
                 renderFlag(data.country_code, data.country_name);
             }
 
-            el.btn.textContent = 'Test again';
+            el.btn.innerHTML = BTN_LABEL;
             el.btn.disabled = false;
             if (document.documentElement.dataset.theme === 'cyber') startGlitch();
         }
@@ -725,7 +753,7 @@
             el.latency.textContent = '';
             el.error.textContent = msg;
             el.error.style.display = 'block';
-            el.btn.textContent = 'Test again';
+            el.btn.innerHTML = BTN_LABEL;
             el.btn.disabled = false;
         }
 
@@ -737,10 +765,17 @@
 
         let baseLatency = null;
         let jitterTimer = null;
+        let runId = 0;
 
-        function renderLatency(ms) {
+        function renderLatency(ms, pulse = false) {
             const cls = ms < 100 ? 'good' : ms < 200 ? 'medium' : 'bad';
-            el.latency.innerHTML = `<span class="latency-badge ${cls}">${ms} ms</span>`;
+            const minCls = pulse ? ' latency-min' : '';
+            el.latency.innerHTML = `<span class="latency-badge${minCls} ${cls}">${ms} ms</span>`;
+            if (pulse) {
+                const badge = el.latency.querySelector('.latency-badge');
+                badge.classList.add('latency-pulse');
+                badge.addEventListener('animationend', () => badge.classList.remove('latency-pulse'), { once: true });
+            }
         }
 
         function scheduleJitter() {
@@ -765,15 +800,30 @@
         }
 
         async function fetchLatency() {
+            const sleep = ms => new Promise(r => setTimeout(r, ms));
+            const myId = ++runId;
+            const samples = [];
             el.latency.innerHTML = '<span class="spinner"></span>';
-            try {
-                const ms = await measureLatency();
-                baseLatency = ms;
-                renderLatency(ms);
-                if (document.documentElement.dataset.theme === 'cyber') startJitter();
-            } catch {
-                el.latency.textContent = '—';
+
+            for (let i = 0; i < 5; i++) {
+                if (myId !== runId) return;
+                if (i > 0) await sleep(1330);
+                if (myId !== runId) return;
+                try {
+                    const ms = await measureLatency();
+                    samples.push(ms);
+                    if (myId !== runId) return;
+                    renderLatency(ms);
+                } catch { /* skip */ }
             }
+
+            if (myId !== runId) return;
+            if (samples.length === 0) { el.latency.textContent = '—'; return; }
+
+            const min = Math.min(...samples);
+            baseLatency = min;
+            renderLatency(min, true);
+            if (document.documentElement.dataset.theme === 'cyber') startJitter();
         }
 
         async function fetchIP() {
@@ -852,6 +902,7 @@
         const cardTitle = document.querySelector('.card-title');
         const ORIGINAL_TITLE = cardTitle.textContent;
         const CYBER_TITLE    = 'NET_SCAN // UPLINK';
+        const BTN_LABEL      = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Test again';
 
         function applyTheme(theme) {
             html.dataset.theme = theme;
