@@ -11,573 +11,35 @@
     <title>IP Info</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300..800&family=Rajdhani:wght@600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400&family=Rajdhani:wght@600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --bg:           #f6f9fc;
-            --card-bg:      #ffffff;
-            --title:        #8898aa;
-            --text:         #1a1f36;
-            --border:       #f0f3f8;
-            --ip-bg:        #e8f2fc;
-            --ip-color:     #1669bb;
-            --spinner-ring: #e0e0e0;
-            --spinner-top:  #8898aa;
-            --shadow:
-                0 0 0 1px rgba(60, 66, 87, 0.08),
-                0 2px 5px rgba(60, 66, 87, 0.06),
-                0 8px 24px rgba(60, 66, 87, 0.08);
-        }
-
-        html[data-theme="dark"] {
-            --bg:           #0d1117;
-            --card-bg:      #161b22;
-            --title:        #6e7f96;
-            --text:         #e6edf3;
-            --border:       #21262d;
-            --ip-bg:        rgba(96, 174, 232, 0.10);
-            --ip-color:     #60aee8;
-            --spinner-ring: #30363d;
-            --spinner-top:  #6e7f96;
-            --shadow:
-                0 0 0 1px rgba(0, 0, 0, 0.4),
-                0 2px 5px rgba(0, 0, 0, 0.3),
-                0 8px 24px rgba(0, 0, 0, 0.3);
-        }
-
-        html[data-theme="light"] {
-            --bg:           #f6f9fc;
-            --card-bg:      #ffffff;
-            --title:        #8898aa;
-            --text:         #1a1f36;
-            --border:       #f0f3f8;
-            --ip-bg:        #e8f2fc;
-            --ip-color:     #1669bb;
-            --spinner-ring: #e0e0e0;
-            --spinner-top:  #8898aa;
-            --shadow:
-                0 0 0 1px rgba(60, 66, 87, 0.08),
-                0 2px 5px rgba(60, 66, 87, 0.06),
-                0 8px 24px rgba(60, 66, 87, 0.08);
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg:           #0d1117;
-                --card-bg:      #161b22;
-                --title:        #6e7f96;
-                --text:         #e6edf3;
-                --border:       #21262d;
-                --ip-bg:        rgba(96, 174, 232, 0.10);
-                --ip-color:     #60aee8;
-                --spinner-ring: #30363d;
-                --spinner-top:  #6e7f96;
-                --shadow:
-                    0 0 0 1px rgba(0, 0, 0, 0.4),
-                    0 2px 5px rgba(0, 0, 0, 0.3),
-                    0 8px 24px rgba(0, 0, 0, 0.3);
-            }
-        }
-
-        html, body {
-            height: 100%;
-            overflow: hidden;
-        }
-
-        body {
-            font-family: 'Funnel Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--bg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        .card {
-            width: min(360px, calc(100vw - 40px));
-            background: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* Header */
-        .card-header {
-            padding: 32px 32px 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .card-title {
-            font-size: 13px;
-            font-weight: 600;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: var(--title);
-        }
-
-        .card-flag {
-            position: relative;
-            width: 24px;
-            height: 18px;
-            border-radius: 3px;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-
-        .card-flag::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 3px;
-            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.10);
-            pointer-events: none;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            .card-flag::after {
-                box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.20);
-            }
-        }
-
-        html[data-theme="dark"] .card-flag::after  { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.20); }
-        html[data-theme="light"] .card-flag::after { box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.10); }
-
-        html[data-theme="dark"] .skeleton {
-            background: linear-gradient(90deg, #21262d 25%, #2d333b 50%, #21262d 75%);
-            background-size: 200% 100%;
-        }
-        html[data-theme="light"] .skeleton {
-            background: linear-gradient(90deg, #f0f3f8 25%, #e4eaf2 50%, #f0f3f8 75%);
-            background-size: 200% 100%;
-        }
-
-        html[data-theme="dark"] .latency-badge.good   { background: rgba(52, 199, 89,  0.15); color: #3dd68c; }
-        html[data-theme="dark"] .latency-badge.medium { background: rgba(255, 159, 10, 0.15); color: #f5a623; }
-        html[data-theme="dark"] .latency-badge.bad    { background: rgba(255, 59,  48, 0.15); color: #ff6b6b; }
-        html[data-theme="light"] .latency-badge.good   { background: rgba(52, 199, 89,  0.15); color: #1a9e50; }
-        html[data-theme="light"] .latency-badge.medium { background: rgba(255, 159, 10, 0.15); color: #b87000; }
-        html[data-theme="light"] .latency-badge.bad    { background: rgba(255, 59,  48, 0.15); color: #d93025; }
-
-        .card-flag .fi {
-            width: 24px;
-            height: 18px;
-            display: block;
-            background-size: cover;
-        }
-
-        .card-flag.visible {
-            opacity: 1;
-        }
-
-        /* Body */
-        .card-body {
-            flex: 1;
-            padding: 16px 32px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .field {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 44px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .field:last-child {
-            border-bottom: none;
-        }
-
-        .field-label {
-            font-size: 14px;
-            color: var(--title);
-            font-weight: 500;
-            flex-shrink: 0;
-        }
-
-        .field-value {
-            font-size: 15px;
-            color: var(--text);
-            font-weight: 500;
-            text-align: right;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        #val-latency {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .ip-text,
-        .latency-badge {
-            font-family: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
-            font-size: 13px;
-            font-weight: 500;
-            padding: 3px 9px;
-            border-radius: 20px;
-            letter-spacing: 0.03em;
-            white-space: nowrap;
-        }
-
-        .ip-text              { background: var(--ip-bg); color: var(--ip-color); cursor: pointer; transition: opacity 0.15s ease; text-align: center; }
-        .ip-text:hover        { opacity: 0.75; }
-        .ip-text.copied       { opacity: 1; }
-        .latency-badge.good   { background: rgba(52, 199, 89,  0.15); color: #1a9e50; }
-        .latency-badge.medium { background: rgba(255, 159, 10, 0.15); color: #b87000; }
-        .latency-badge.bad    { background: rgba(255, 59,  48, 0.15); color: #d93025; }
-
-        .latency-badge.latency-min { font-weight: 500; }
-
-        @keyframes badge-pulse {
-            0%   { box-shadow: 0 0 0 0px currentColor; }
-            40%  { box-shadow: 0 0 0 1px currentColor; }
-            100% { box-shadow: 0 0 0 0px currentColor; }
-        }
-        .latency-badge.latency-pulse { animation: badge-pulse 0.3s ease-out forwards; }
-
-        @media (prefers-color-scheme: dark) {
-            .latency-badge.good   { background: rgba(52, 199, 89,  0.15); color: #3dd68c; }
-            .latency-badge.medium { background: rgba(255, 159, 10, 0.15); color: #f5a623; }
-            .latency-badge.bad    { background: rgba(255, 59,  48, 0.15); color: #ff6b6b; }
-        }
-
-        .spinner {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid var(--spinner-ring);
-            border-top-color: var(--spinner-top);
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-            vertical-align: middle;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Skeleton */
-        .skeleton {
-            display: inline-block;
-            background: linear-gradient(90deg, #f0f3f8 25%, #e4eaf2 50%, #f0f3f8 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.4s infinite;
-            border-radius: 4px;
-            height: 15px;
-            vertical-align: middle;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            .skeleton {
-                background: linear-gradient(90deg, #21262d 25%, #2d333b 50%, #21262d 75%);
-                background-size: 200% 100%;
-            }
-        }
-
-        @keyframes shimmer {
-            0%   { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        /* Footer */
-        .card-footer {
-            padding: 0 32px 32px;
-        }
-
-        @media (max-width: 440px) {
-            .card-header { padding: 20px 20px 0; }
-            .card-body   { padding: 16px 20px; }
-            .card-footer { padding: 0 20px 20px; }
-        }
-
-        .btn {
-            width: 100%;
-            height: 44px;
-            background: #1a7bd4;
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            font-family: inherit;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            letter-spacing: 0.01em;
-            transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-        }
-        .btn svg { flex-shrink: 0; }
-
-        .btn:hover    { background: #1569bf; box-shadow: 0 4px 12px rgba(26, 123, 212, 0.35); }
-        .btn:active   { transform: scale(0.99); }
-        .btn:disabled { background: #8ec4ef; cursor: not-allowed; box-shadow: none; transform: none; }
-
-        html[data-theme="light"] .btn          { background: #e8f2fc; color: #1669bb; box-shadow: none; }
-        html[data-theme="light"] .btn:hover    { background: #d8eaf8; box-shadow: none; color: #1157a0; }
-        html[data-theme="light"] .btn:active   { background: #cce0f5; box-shadow: none; color: #0e4a8a; }
-        html[data-theme="light"] .btn:disabled { background: #f0f7fd; color: #7aaed4; box-shadow: none; }
-
-        html[data-theme="dark"] .btn          { background: rgba(96, 174, 232, 0.10); color: #60aee8; box-shadow: none; }
-        html[data-theme="dark"] .btn:hover    { background: rgba(96, 174, 232, 0.06); box-shadow: none; color: #4d9ad4; }
-        html[data-theme="dark"] .btn:active   { background: rgba(96, 174, 232, 0.18); box-shadow: none; color: #80c4f0; }
-        html[data-theme="dark"] .btn:disabled { background: rgba(96, 174, 232, 0.05); color: #3a6a8a; box-shadow: none; }
-
-        .btn .spinner {
-            border-color: rgba(255, 255, 255, 0.35);
-            border-top-color: #ffffff;
-        }
-
-        .error-msg {
-            font-size: 13px;
-            color: #e5424d;
-            text-align: center;
-            padding: 8px 0 0;
-        }
-
-        /* Theme switcher */
-        .theme-switcher {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 4px;
-            background: rgba(128, 128, 128, 0.12);
-            border-radius: 20px;
-            padding: 4px;
-            opacity: 0.25;
-        }
-
-        .theme-btn {
-            width: 28px;
-            height: 28px;
-            border: none;
-            background: transparent;
-            border-radius: 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text);
-            transition: background 0.15s ease;
-        }
-
-        .theme-btn.active {
-            background: rgba(128, 128, 128, 0.25);
-        }
-
-        .theme-btn svg {
-            width: 14px;
-            height: 14px;
-        }
-
-        /* ── Cyberpunk 2077 theme ─────────────────────────────── */
-        html[data-theme="cyber"] {
-            --bg:           #04000a;
-            --card-bg:      #070010;
-            --title:        #ff003c;
-            --text:         #e0c8d0;
-            --border:       rgba(255, 0, 60, 0.15);
-            --ip-bg:        rgba(0, 240, 255, 0.06);
-            --ip-color:     #00f0ff;
-            --spinner-ring: rgba(255, 0, 60, 0.15);
-            --spinner-top:  #ff003c;
-            --shadow:
-                0 0 0 1px rgba(255, 0, 60, 0.4),
-                0 0 40px rgba(255, 0, 60, 0.12),
-                inset 0 0 80px rgba(4, 0, 10, 0.8);
-        }
-
-        /* Scanline overlay */
-        html[data-theme="cyber"] body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background: repeating-linear-gradient(
-                to bottom,
-                transparent 0px,
-                transparent 1px,
-                rgba(0, 0, 0, 0.06) 1px,
-                rgba(0, 0, 0, 0.06) 2px
-            );
-            pointer-events: none;
-            z-index: 9999;
-        }
-
-        /* Card */
-        html[data-theme="cyber"] .card {
-            border: 1px solid #ff003c;
-            border-radius: 0;
-            overflow: visible;
-            position: relative;
-        }
-
-        /* Corner brackets */
-
-        /* Typography */
-        html[data-theme="cyber"] .card-title {
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 16px;
-            font-weight: 600;
-            letter-spacing: 0.25em;
-            color: #ff003c;
-            animation: glitch 5s infinite, flicker 8s infinite;
-        }
-
-        html[data-theme="cyber"] .field-label {
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: #ff003c;
-        }
-
-        html[data-theme="cyber"] .field-value {
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 16px;
-            font-weight: 600;
-            color: #e0c8d0;
-        }
-
-        /* IP badge */
-        html[data-theme="cyber"] .ip-text {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 15px;
-            color: #00f0ff;
-            background: none;
-            border: none;
-            border-radius: 0;
-            padding: 0;
-        }
-        html[data-theme="cyber"] .ip-text::before { content: '['; margin-right: 3px; color: #00f0ff; }
-        html[data-theme="cyber"] .ip-text::after  { content: ']'; margin-left: 3px;  color: #00f0ff; }
-
-        /* Latency badges */
-        html[data-theme="cyber"] .latency-badge {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 15px;
-            background: none;
-            border: none;
-            border-radius: 0;
-            padding: 0;
-        }
-        html[data-theme="cyber"] .latency-badge::before { content: '['; margin-right: 3px; }
-        html[data-theme="cyber"] .latency-badge::after  { content: ']'; margin-left: 3px; }
-        html[data-theme="cyber"] .latency-badge.good   { color: #00ff64; }
-        html[data-theme="cyber"] .latency-badge.medium { color: #ffc800; }
-        html[data-theme="cyber"] .latency-badge.bad    { color: #ff003c; }
-
-        /* Button */
-        html[data-theme="cyber"] .btn {
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 16px;
-            animation: glitch 5s infinite, flicker 8s infinite;
-            font-weight: 700;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            background: transparent;
-            border: 1px solid #ff003c;
-            border-radius: 0;
-            color: #ff003c;
-            height: 40px;
-        }
-        html[data-theme="cyber"] .btn::before { content: '[ '; color: #00f0ff; }
-        html[data-theme="cyber"] .btn::after  { content: ' ]'; color: #00f0ff; }
-        html[data-theme="cyber"] .btn:hover {
-            background: rgba(255, 0, 60, 0.08);
-            box-shadow: 0 0 24px rgba(255, 0, 60, 0.35);
-            color: #ff6080;
-        }
-        html[data-theme="cyber"] .btn:disabled {
-            background: transparent;
-            border-color: rgba(255, 0, 60, 0.18);
-            color: rgba(255, 0, 60, 0.25);
-            box-shadow: none;
-        }
-
-        /* Skeleton */
-        html[data-theme="cyber"] .skeleton {
-            background: linear-gradient(90deg, #1a000e 25%, rgba(255, 0, 60, 0.15) 50%, #1a000e 75%);
-            background-size: 200% 100%;
-            border-radius: 0;
-        }
-
-        /* Spinner */
-        html[data-theme="cyber"] .spinner {
-            border-color: rgba(255, 0, 60, 0.15);
-            border-top-color: #ff003c;
-            border-radius: 50%;
-        }
-
-        /* Flag */
-        html[data-theme="cyber"] .card-flag        { border-radius: 0; width: auto; height: auto; overflow: visible; }
-        html[data-theme="cyber"] .card-flag::after { display: none; }
-
-        .cyber-country-code {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 16px;
-            color: #00f0ff;
-            letter-spacing: 0.05em;
-            white-space: nowrap;
-        }
-
-        /* Animations */
-        @keyframes glitch {
-            0%, 92%, 100% { text-shadow: none; transform: none; }
-            93%  { text-shadow: -2px 0 #00f0ff; transform: translateX(1px); }
-            94%  { text-shadow:  2px 0 #ff003c; transform: translateX(-1px); }
-            95%  { text-shadow: none; transform: none; }
-            96%  { text-shadow: 1px 0 #00f0ff, -1px 0 #ff003c; }
-            97%  { text-shadow: none; transform: none; }
-        }
-
-        @keyframes flicker {
-            0%, 95%, 100% { opacity: 1; }
-            96%  { opacity: 0.85; }
-            97%  { opacity: 1; }
-            98%  { opacity: 0.9; }
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="page">
+    <!-- Cyberpunk-only headline, stretched to the width of both cards -->
+    <svg class="cyber-title" viewBox="0 0 736 64" aria-hidden="true">
+        <text x="0" y="50" textLength="736" lengthAdjust="spacing">NET_SCAN // UPLINK</text>
+    </svg>
+    <div class="layout">
     <div class="card">
-        <div class="card-header">
-            <div class="card-title">IP Info</div>
-            <div class="card-flag" id="flag"></div>
-        </div>
-
         <div class="card-body">
             <div class="field">
                 <span class="field-label">IP Address</span>
                 <span class="field-value">
                     <span class="ip-text" id="val-ip"><span class="skeleton" style="width:110px"></span></span>
-                    <span id="val-latency"></span>
                 </span>
             </div>
             <div class="field">
+                <span class="field-label">Ping</span>
+                <span class="field-value" id="val-latency"></span>
+            </div>
+            <div class="field">
                 <span class="field-label">Country</span>
-                <span class="field-value" id="val-country"><span class="skeleton" style="width:90px"></span></span>
+                <span class="field-value">
+                    <span id="val-country"><span class="skeleton" style="width:90px"></span></span>
+                    <div class="card-flag" id="flag"></div>
+                </span>
             </div>
             <div class="field">
                 <span class="field-label">Region</span>
@@ -604,6 +66,19 @@
             </button>
             <div class="error-msg" id="error-msg" style="display:none"></div>
         </div>
+    </div>
+
+    <!-- Map card: desktop only (hidden via CSS on narrow screens) -->
+    <div class="card map-card" id="map-card" aria-hidden="true">
+        <svg id="map" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <g id="map-land" class="map-land"></g>
+            <g id="map-dot" style="display:none">
+                <circle class="map-dot-halo"></circle>
+                <circle class="map-dot-core"></circle>
+            </g>
+        </svg>
+    </div>
+    </div>
     </div>
 
     <div class="theme-switcher">
@@ -641,7 +116,185 @@
             error:   document.getElementById('error-msg'),
         };
 
+        // ── Map (desktop only; self-drawn SVG, no tiles, no libraries) ──
+        const mapCard = document.getElementById('map-card');
+        const mapSvg  = document.getElementById('map');
+        const mapLand = document.getElementById('map-land');
+        const mapDot  = document.getElementById('map-dot');
+        const mapPaths = {};      // country code -> [<path>, ...]
+        const mapBoxes = {};      // country code -> [{minX,minY,maxX,maxY,rings}, ...] in projected coords
+        let worldPromise = null;
+        let lastMap = null;       // { code, lat, lon } for re-render on resize
+
+        const mapVisible = () => getComputedStyle(mapCard).display !== 'none';
+
+        // Web Mercator in degrees; y is flipped for SVG
+        const projX = lon => lon;
+        const projY = lat => {
+            const l = Math.max(-82, Math.min(82, lat)) * Math.PI / 180;
+            return -Math.log(Math.tan(Math.PI / 4 + l / 2)) * 180 / Math.PI;
+        };
+
+        function loadWorld() {
+            if (worldPromise) return worldPromise;
+            worldPromise = new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.src = 'world.js';
+                s.onload = () => { buildMap(window.WORLD); resolve(); };
+                s.onerror = () => { worldPromise = null; reject(new Error('world.js')); };
+                document.head.appendChild(s);
+            });
+            return worldPromise;
+        }
+
+        // Closed ring -> path with softened corners: every vertex becomes the control
+        // point of a quadratic curve between the midpoints of its two edges.
+        // Neighbouring countries share vertices, so shared borders stay aligned.
+        function roundedRing(pts) {
+            let n = pts.length;
+            if (n > 1 && pts[0][0] === pts[n - 1][0] && pts[0][1] === pts[n - 1][1]) n--; // drop closing duplicate
+            const f = v => v.toFixed(2);
+            if (n < 3) return pts.slice(0, n).map((p, i) => (i ? 'L' : 'M') + f(p[0]) + ' ' + f(p[1])).join('') + 'Z';
+            const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+            const m0 = mid(pts[n - 1], pts[0]);
+            let d = 'M' + f(m0[0]) + ' ' + f(m0[1]);
+            for (let i = 0; i < n; i++) {
+                const p = pts[i], m = mid(p, pts[(i + 1) % n]);
+                d += 'Q' + f(p[0]) + ' ' + f(p[1]) + ' ' + f(m[0]) + ' ' + f(m[1]);
+            }
+            return d + 'Z';
+        }
+
+        function buildMap(world) {
+            const NS = 'http://www.w3.org/2000/svg';
+            const frag = document.createDocumentFragment();
+            for (const code of Object.keys(world)) {
+                if (code === 'AQ') continue; // Antarctica distorts Mercator
+                mapBoxes[code] = [];
+                mapPaths[code] = [];
+                for (const poly of world[code]) {
+                    let d = '';
+                    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                    const rings = [];
+                    for (const flat of poly) {
+                        const pts = [];
+                        for (let i = 0; i < flat.length; i += 2) {
+                            const x = projX(flat[i] / 100), y = projY(flat[i + 1] / 100);
+                            pts.push([x, y]);
+                            if (rings.length === 0) {
+                                if (x < minX) minX = x; if (x > maxX) maxX = x;
+                                if (y < minY) minY = y; if (y > maxY) maxY = y;
+                            }
+                        }
+                        d += roundedRing(pts);
+                        rings.push(pts);
+                    }
+                    const path = document.createElementNS(NS, 'path');
+                    path.setAttribute('d', d);
+                    frag.appendChild(path);
+                    mapPaths[code].push(path);
+                    mapBoxes[code].push({ minX, minY, maxX, maxY, outer: rings[0] });
+                }
+            }
+            mapLand.appendChild(frag);
+        }
+
+        // Bounds of the country's "main body": the largest polygon plus any polygons close
+        // to it (chained), so near islands count but far overseas territories don't.
+        // The city point is always included so the dot never falls outside the view.
+        function countryBounds(boxes, px, py) {
+            const main = boxes.reduce((a, b) =>
+                (b.maxX - b.minX) * (b.maxY - b.minY) > (a.maxX - a.minX) * (a.maxY - a.minY) ? b : a);
+            const gap = Math.max(1.5, 0.05 * Math.max(main.maxX - main.minX, main.maxY - main.minY));
+            const r = { minX: main.minX, minY: main.minY, maxX: main.maxX, maxY: main.maxY };
+            const rest = boxes.filter(b => b !== main);
+            let grew = true;
+            while (grew) {
+                grew = false;
+                for (let i = rest.length - 1; i >= 0; i--) {
+                    const b = rest[i];
+                    const dx = Math.max(b.minX - r.maxX, r.minX - b.maxX, 0);
+                    const dy = Math.max(b.minY - r.maxY, r.minY - b.maxY, 0);
+                    if (Math.max(dx, dy) <= gap) {
+                        r.minX = Math.min(r.minX, b.minX); r.maxX = Math.max(r.maxX, b.maxX);
+                        r.minY = Math.min(r.minY, b.minY); r.maxY = Math.max(r.maxY, b.maxY);
+                        rest.splice(i, 1); grew = true;
+                    }
+                }
+            }
+            if (px !== null) {
+                r.minX = Math.min(r.minX, px); r.maxX = Math.max(r.maxX, px);
+                r.minY = Math.min(r.minY, py); r.maxY = Math.max(r.maxY, py);
+            }
+            return r;
+        }
+
+        function clearMap() {
+            lastMap = null;
+            mapDot.style.display = 'none';
+            mapLand.querySelectorAll('path.active').forEach(p => p.classList.remove('active'));
+        }
+
+        async function renderMap(code, lat, lon) {
+            if (!mapVisible()) return;
+            lastMap = { code, lat, lon };
+            try { await loadWorld(); } catch { return; }
+            if (lastMap === null || lastMap.code !== code) return; // superseded
+
+            mapLand.querySelectorAll('path.active').forEach(p => p.classList.remove('active'));
+            const key = (code || '').toUpperCase();
+            // active country goes last so its border is drawn above its neighbours'
+            (mapPaths[key] || []).forEach(p => { p.classList.add('active'); mapLand.appendChild(p); });
+
+            const hasPt = Number.isFinite(lat) && Number.isFinite(lon);
+            const px = hasPt ? projX(lon) : null, py = hasPt ? projY(lat) : null;
+
+            const W = mapCard.clientWidth, H = mapCard.clientHeight;
+            if (!W || !H) return;
+
+            // Region to fit: main body of the country (+ city), at least MIN degrees wide
+            const MIN = 6;
+            let cx, cy, w, h;
+            const boxes = mapBoxes[key];
+            if (boxes && boxes.length) {
+                const b = countryBounds(boxes, px, py);
+                cx = (b.minX + b.maxX) / 2; cy = (b.minY + b.maxY) / 2;
+                w = (b.maxX - b.minX) / 0.8; h = (b.maxY - b.minY) / 0.8; // country fills 80% of the card
+                if (hasPt && Math.max(w, h) < MIN) { cx = px; cy = py; }
+            } else if (hasPt) {
+                cx = px; cy = py; w = h = MIN;
+            } else {
+                return;
+            }
+            w = Math.max(w, MIN); h = Math.max(h, MIN);
+
+            // Fit into card aspect ratio
+            const aspect = W / H;
+            let vw = w, vh = w / aspect;
+            if (vh < h) { vh = h; vw = h * aspect; }
+            mapSvg.setAttribute('viewBox', `${cx - vw / 2} ${cy - vh / 2} ${vw} ${vh}`);
+
+            if (hasPt) {
+                const unit = vw / W; // user units per CSS pixel
+                const [halo, core] = mapDot.children;
+                halo.setAttribute('cx', px); halo.setAttribute('cy', py); halo.setAttribute('r', 11 * unit);
+                core.setAttribute('cx', px); core.setAttribute('cy', py); core.setAttribute('r', 5 * unit);
+                mapDot.style.display = '';
+            } else {
+                mapDot.style.display = 'none';
+            }
+        }
+
+        let mapResizeTimer = null;
+        window.addEventListener('resize', () => {
+            clearTimeout(mapResizeTimer);
+            mapResizeTimer = setTimeout(() => {
+                if (lastMap) { const m = lastMap; lastMap = null; renderMap(m.code, m.lat, m.lon); }
+            }, 150);
+        });
+
         function setLoading() {
+            clearMap();
             stopGlitch();
             stopJitter();
             baseLatency = null;
@@ -741,6 +394,7 @@
             if (data.country_code) {
                 renderFlag(data.country_code, data.country_name);
             }
+            renderMap(data.country_code, data.lat, data.lon);
 
             el.btn.innerHTML = BTN_LABEL;
             el.btn.disabled = false;
@@ -751,6 +405,7 @@
             el.ip.textContent = el.country.textContent = el.region.textContent =
                 el.city.textContent = el.isp.textContent = el.asn.textContent = '—';
             el.latency.textContent = '';
+            clearMap();
             el.error.textContent = msg;
             el.error.style.display = 'block';
             el.btn.innerHTML = BTN_LABEL;
@@ -856,6 +511,8 @@
                     city:         infoJson.city   || '—',
                     isp,
                     asn,
+                    lat: parseFloat((infoJson.loc || '').split(',')[0]),
+                    lon: parseFloat((infoJson.loc || '').split(',')[1]),
                 });
             } catch (e) {
                 setError('Failed to fetch IP info. Try again.');
@@ -899,9 +556,6 @@
         const btnDark   = document.getElementById('btn-dark');
         const btnCyber  = document.getElementById('btn-cyber');
         const card      = document.querySelector('.card');
-        const cardTitle = document.querySelector('.card-title');
-        const ORIGINAL_TITLE = cardTitle.textContent;
-        const CYBER_TITLE    = 'NET_SCAN // UPLINK';
         const BTN_LABEL      = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Test again';
 
         function applyTheme(theme) {
@@ -911,7 +565,6 @@
             btnCyber.classList.toggle('active', theme === 'cyber');
             const themeColors = { light: '#f6f9fc', dark: '#0d1117', cyber: '#04000A' };
             document.querySelector('meta[name="theme-color"]').content = themeColors[theme] ?? '#0d1117';
-            cardTitle.textContent = theme === 'cyber' ? CYBER_TITLE : ORIGINAL_TITLE;
             if (lastCountryCode) renderFlag(lastCountryCode, lastCountryName);
             if (theme === 'cyber' && Object.keys(fieldValues).length) startGlitch();
             else stopGlitch();
